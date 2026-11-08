@@ -1,5 +1,10 @@
 # ZUNPY – Invoice Automation
 
+<p align="center">
+  <img src="assets/zunpy-logo.png" alt="ZUNPY Logo" width="300">
+</p>
+
+
 **Automated invoice data extraction and registration using n8n and local AI.**
 
 ## Overview
