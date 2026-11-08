@@ -1,0 +1,381 @@
+{
+  "name": "ZUNPY – Invoice Workflow 1",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "ZUNPY - Invoice Processing",
+        "formDescription": "Upload your invoice in PDF format for automatic processing.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Invoice PDF",
+              "fieldType": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e96b6cbc-7d42-4305-8e61-82fd0b2719d6",
+      "name": "On form submission",
+      "webhookId": "6f62b497-c00d-42ef-a5b7-083e8085d6ba"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "Invoice_PDF",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "4ff80111-f075-48e1-ad94-0c2af00a992a",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "YOUR_SPREADSHEET_ID",
+              "name": "invoice_text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        0,
+        -160
+      ],
+      "id": "7e96b002-e23d-49c0-9830-24f74d06f4eb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.invoice_text }}",
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"invoice_number\": {\n      \"type\": \"string\"\n    },\n    \"issue_date\": {\n      \"type\": \"string\"\n    },\n    \"due_date\": {\n      \"type\": \"string\"\n    },\n    \"issuer_name\": {\n      \"type\": \"string\"\n    },\n    \"issuer_tax_id\": {\n      \"type\": \"string\"\n    },\n    \"client_name\": {\n      \"type\": \"string\"\n    },\n    \"client_tax_id\": {\n      \"type\": \"string\"\n    },\n    \"description\": {\n      \"type\": \"string\"\n    },\n    \"quantity\": {\n      \"type\": \"number\"\n    },\n    \"taxable_base\": {\n      \"type\": \"number\"\n    },\n    \"vat_rate\": {\n      \"type\": \"number\"\n    },\n    \"vat_amount\": {\n      \"type\": \"number\"\n    },\n    \"total\": {\n      \"type\": \"number\"\n    },\n    \"currency\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"invoice_number\",\n    \"issue_date\",\n    \"due_date\",\n    \"issuer_name\",\n    \"client_name\",\n    \"taxable_base\",\n    \"vat_amount\",\n    \"total\",\n    \"currency\"\n  ]\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        208
+      ],
+      "id": "351c2383-fb48-4279-b939-dfea680bd07d",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "model": "gemma4:26b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -128
+      ],
+      "id": "195c8bec-9e12-4d0a-94d0-401d7132c354",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "mab2Yb7bWBfXbmri",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "[ID_DE_TU_HOJA_DE_CALCULO]",
+          "mode": "list",
+          "cachedResultName": "[NOMBRE_DE_TU_DOCUMENTO]"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "[NOMBRE_DE_TU_PESTAÑA]"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "invoice_number": "={{ $json.output.invoice_number }}",
+            "issue_date": "={{ $json.output.issue_date }}",
+            "due_date": "={{ $json.output.due_date }}",
+            "issuer_name": "={{ $json.output.issuer_name }}",
+            "issuer_tax_id": "={{ $json.output.issuer_tax_id }}",
+            "client_name": "={{ $json.output.client_name }}",
+            "client_tax_id": "={{ $json.output.client_tax_id }}",
+            "description": "={{ $json.output.description }}",
+            "quantity": "={{ $json.output.quantity }}",
+            "taxable_base": "={{ $json.output.taxable_base }}",
+            "vat_rate": "={{ $json.output.vat_rate }}",
+            "vat_amount": "={{ $json.output.vat_amount }}",
+            "total": "={{ $json.output.total }}",
+            "currency": "={{ $json.output.currency }}"
+          },
+          "matchingColumns": [
+            "invoice_number"
+          ],
+          "schema": [
+            {
+              "id": "invoice_number",
+              "displayName": "invoice_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "issue_date",
+              "displayName": "issue_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "due_date",
+              "displayName": "due_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "issuer_name",
+              "displayName": "issuer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "issuer_tax_id",
+              "displayName": "issuer_tax_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "client_name",
+              "displayName": "client_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "client_tax_id",
+              "displayName": "client_tax_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "quantity",
+              "displayName": "quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "taxable_base",
+              "displayName": "taxable_base",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "vat_rate",
+              "displayName": "vat_rate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "vat_amount",
+              "displayName": "vat_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "total",
+              "displayName": "total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "currency",
+              "displayName": "currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        256,
+        208
+      ],
+      "id": "d22fcbf1-4525-4902-bed2-1023debfb43f",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Pnnw73DBATSdF5OI",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "efd07297-251d-4f93-8e58-1829b624eb7f",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "id": "weCbMYgT7TU5ptlK",
+  "tags": []
+}

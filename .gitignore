@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+venv/
+ENV/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# n8n / Local data
+*.log
+*.sqlite
+*.db
+
+# Security
+.env
+*.pem
+*.key
+
+# Screenshots & Workflow (to be manually placed)
+# screenshots/
+# workflow/*.json
